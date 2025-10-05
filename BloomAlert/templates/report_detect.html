@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+body{
+   background: url("{{ url_for('static', filename='images/Screenshot 2025-10-05 081625.png') }}")
+   no-repeat center center / cover;
+}
+</style>
+<body>
+<h1 class="page-title">🌸 My Bloom Reports 🌸</h1>
+
+<div class="glass-container">
+  {% if reports %}
+  <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center;">
+    {% for report in reports %}
+    <div class="glass-container" style="flex:1 1 250px; text-align:center;">
+      <p style="color: black;"><strong>Location:</strong> {{ report.location }}</p>
+      <p style="color: black;"><strong>Bloom:</strong> {{ report.blooming }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p style="text-align:center;">No reports uploaded yet 🌿</p>
+  {% endif %}
+</div>
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Location</th>
+        <th>Date</th>
+        <th>NDVI</th>
+        <th>Blooming</th>
+    </tr>
+    {% for report in reports %}
+    <tr>
+        <td style="color: black;"><strong>{{ report.location }}</strong></td>
+        <td style="color: black;"><strong>{{ report.date }}</strong></td>
+        <td style="color: black;"><strong>{{ report.ndvi }}</strong></td>
+        <td>
+            {% if report.blooming %}<span style="color: green;"><strong>Yes</strong></span>
+            {% else %}<span style="color: rgb(198, 60, 60);"><strong>No</strong></span>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+</body>
+{% endblock %}

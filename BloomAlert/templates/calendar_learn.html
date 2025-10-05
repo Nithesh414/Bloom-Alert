@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+body {
+  background: url("{{ url_for('static', filename='images/5f1648b1-ba26-47a9-a180-6ad6ce3e2980.jpg') }}") no-repeat center center / cover;
+  font-family: 'Poppins', sans-serif;
+  color:#333;
+  margin:0;
+  overflow-x:hidden;
+}
+
+.page-title {
+  text-align:center;
+  color:#fff;
+  font-weight:700;
+  margin:40px 0 25px;
+  font-size:2.6rem;
+  text-shadow:0 0 15px rgba(255,182,193,0.8);
+}
+
+.container {
+  max-width:1000px;
+  margin:auto;
+  padding:30px 25px 60px 25px;
+}
+
+/* Glass-style sections */
+.calendar-section, .learn-section {
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(15px);
+  border-radius:20px;
+  padding:30px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.2);
+  color:#fff;
+  margin-bottom:40px;
+}
+
+.calendar-section h2, .learn-section h2 {
+  color:#ffdee2;
+  font-weight:700;
+  margin-bottom:20px;
+  text-align:center;
+  text-shadow:0 0 10px rgba(255,182,193,0.7);
+}
+
+/* --- Calendar --- */
+#calendar-table {
+  width:100%;
+  border-collapse: separate;
+  border-spacing:12px;
+  padding: 20px 10px;
+  vertical-align: top;
+}
+
+#calendar-table th {
+  background: linear-gradient(90deg,#ff6f91,#ffb3c6);
+  color:white;
+  font-weight:700;
+  padding:10px;
+  border-radius:10px;
+}
+
+/* Date boxes */
+#calendar-table td {
+  background: rgba(255,255,255,0.75);
+  color: #000;
+  text-align: center;
+  padding:15px 5px; /* uniform cell height */
+  border-radius:15px;
+  font-weight:700;
+  font-size:1.1rem;
+  position: relative;
+  cursor: default;
+  vertical-align: top; /* keep table layout */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hover animation */
+#calendar-table td:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(255,182,193,0.6);
+}
+
+/* Bloom highlight */
+#calendar-table td.bloom {
+  background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(255,192,203,0.5));
+  box-shadow: 0 4px 15px rgba(255,182,193,0.6);
+}
+
+/* Date number on top */
+.date-number {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #000;
+  margin-bottom: 6px;
+}
+
+/* Flower name below */
+.bloom-badge {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #000;
+  display: block;
+  margin-top: 4px;
+  text-align: center;
+  background: rgba(255,255,255,0.7);
+  padding: 4px 6px;
+  border-radius: 12px;
+}
+
+.month-btn {
+  background: linear-gradient(145deg,#ff9db0,#ff5a7f);
+  border:none;
+  padding:8px 12px;
+  border-radius:50%;
+  color:white;
+  font-size:1.2rem;
+  cursor:pointer;
+}
+
+/* Popup */
+#event-popup {
+  background: rgba(255,255,255,0.95);
+  color:#333;
+  padding:20px;
+  border-radius:15px;
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  z-index:1000;
+  max-width:400px;
+  display:none;
+}
+
+#event-popup img {
+  max-width:100%;
+  border-radius:10px;
+  margin-bottom:10px;
+}
+</style>
+
+<h1 class="page-title">🌸 Bloom Calendar & Educational Guide 🌸</h1>
+
+<div class="container">
+  <section class="calendar-section">
+    <h2>Seasonal Bloom Calendar</h2>
+    <div id="calendar">
+      <div id="month-year" style="margin-bottom:15px; text-align:center;">
+        <button id="prev" class="month-btn">&#10094;</button>
+        <span id="month" style="font-weight:700; font-size:1.4rem; margin:0 15px;"></span>
+        <span id="year" style="font-weight:700; font-size:1.4rem;"></span>
+        <button id="next" class="month-btn">&#10095;</button>
+      </div>
+      <table id="calendar-table">
+        <thead>
+          <tr>
+            <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+          </tr>
+        </thead>
+        <tbody id="calendar-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="learn-section">
+    <h2>About NDVI and Plant Phenology</h2>
+    <p>The Normalized Difference Vegetation Index (NDVI) indicates plant health by analyzing how vegetation reflects light. Higher NDVI means greener, healthier plants 🌿.</p>
+    <p>Phenology observes bloom and growth timing — a reflection of how nature responds to climate. Tracking bloom cycles helps farmers plan better and protect biodiversity 🌼.</p>
+    <p>BloomAlert integrates NDVI data with AI bloom detection to visualize floral patterns in harmony with nature 🌸.</p>
+  </section>
+</div>
+
+<!-- Event popup -->
+<div id="event-popup">
+  <h3>Events on <span id="event-date"></span></h3>
+  <div id="event-list"></div>
+  <button onclick="closePopup()">Close</button>
+</div>
+
+<script>
+const calendarBody = document.getElementById('calendar-body');
+const monthSpan = document.getElementById('month');
+const yearSpan = document.getElementById('year');
+const prevBtn = document.getElementById('prev');
+const nextBtn = document.getElementById('next');
+const eventPopup = document.getElementById('event-popup');
+const eventDate = document.getElementById('event-date');
+const eventList = document.getElementById('event-list');
+
+let today = new Date();
+let currentMonth = today.getMonth();
+let currentYear = today.getFullYear();
+
+const flowerData = [
+  { name: "Marigold", region: "Chennai", months: ["October","November","December","January","February"], intensity: "High" },
+  { name: "Sunflower", region: "North India", months: ["November","December","January","February","March"], intensity: "Medium" },
+  { name: "Jasmine", region: "South India", months: ["January","February","March","April","May","June","July","August","September","October","November","December"], intensity: "High" },
+  { name: "Lotus", region: "All India", months: ["June","July","August","September"], intensity: "Medium" }
+];
+
+function showCalendar(month, year){
+  const firstDay = new Date(year, month).getDay();
+  const daysInMonth = new Date(year, month+1,0).getDate();
+  monthSpan.textContent = new Date(year, month).toLocaleString('default',{month:'long'});
+  yearSpan.textContent = year;
+  calendarBody.innerHTML = '';
+  let date = 1;
+  for(let i=0;i<6;i++){
+    const row = document.createElement('tr');
+    for(let j=0;j<7;j++){
+      const cell = document.createElement('td');
+      if(i===0 && j<firstDay){ cell.innerHTML=''; row.appendChild(cell); continue; }
+      if(date > daysInMonth){ cell.innerHTML=''; row.appendChild(cell); continue; }
+
+      const monthName = new Date(year, month, date).toLocaleString('default',{month:'long'});
+      const blooms = flowerData.filter(f=>f.months.includes(monthName));
+
+      // Date on top
+      cell.innerHTML = `<div class="date-number">${date}</div>`;
+
+      // Flower name below
+      if(blooms.length > 0){
+        cell.classList.add('bloom');
+        const bloomDiv = document.createElement('div');
+        bloomDiv.className = 'bloom-badge';
+        bloomDiv.textContent = blooms.map(f=>f.name).join(', ');
+        cell.appendChild(bloomDiv);
+        cell.onclick = () => showPopup(date, monthName, blooms);
+      }
+
+      row.appendChild(cell);
+      date++;
+    }
+    calendarBody.appendChild(row);
+  }
+}
+
+function showPopup(day, monthName, blooms){
+  eventDate.textContent = `${day} ${monthName}`;
+  eventList.innerHTML = '';
+  blooms.forEach(f=>{
+    const div = document.createElement('div');
+    div.innerHTML = `<strong>${f.name}</strong> - Region: ${f.region}, Intensity: ${f.intensity}`;
+    eventList.appendChild(div);
+  });
+  eventPopup.style.display='block';
+}
+
+function closePopup(){ eventPopup.style.display='none'; }
+
+prevBtn.onclick = ()=>{
+  currentMonth--;
+  if(currentMonth<0){ currentMonth=11; currentYear--; }
+  showCalendar(currentMonth,currentYear);
+}
+
+nextBtn.onclick = ()=>{
+  currentMonth++;
+  if(currentMonth>11){ currentMonth=0; currentYear++; }
+  showCalendar(currentMonth,currentYear);
+}
+
+showCalendar(currentMonth,currentYear);
+</script>
+{% endblock %}

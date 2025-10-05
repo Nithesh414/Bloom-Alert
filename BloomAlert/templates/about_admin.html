@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="page-title">🌼 About BloomAlert & Admin Panel 🌼</h1>
+<style>
+  body{
+  background: url("{{ url_for('static', filename='images/89e681c4-0f1d-492f-9248-565b17d25604.jpg') }}")
+  no-repeat center center / cover;
+  }
+</style>
+
+<div class="glass-container">
+  <h2>About BloomAlert</h2>
+  <p>
+    BloomAlert is a smart environmental monitoring system that visualizes vegetation bloom patterns using NDVI data and AI-based bloom detection.
+  </p>
+  <p>
+    Our mission: help farmers and researchers track plant phenology to support sustainable agriculture 🌿.
+  </p>
+
+  <h3>Contact Us</h3>
+  <form method="POST" action="/contact">
+    <label>Name</label>
+    <input type="text" name="name" placeholder="Your name" required />
+
+    <label>Email</label>
+    <input type="text" name="email" placeholder="Your email" required />
+
+    <label>Message</label>
+    <textarea name="message" placeholder="Your message..." required></textarea>
+
+    <button type="submit" class="submit-btn">Send Message</button>
+  </form>
+</div>
+
+<div class="glass-container">
+  <h2>Admin Panel - Bloom Reports</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Report ID</th>
+        <th>User</th>
+        <th>Image</th>
+        <th>Location</th>
+        <th>Date/Time</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="adminReportsBody">
+      <tr>
+        <td>Sample1</td>
+        <td>user1</td>
+        <td><img src="/uploads/sample1.jpg" width="50" /></td>
+        <td>Chennai</td>
+        <td>2025-10-01 08:30</td>
+        <td>Pending</td>
+        <td>
+          <button class="submit-btn" style="padding:6px 10px;">Approve</button>
+          <button class="submit-btn" style="padding:6px 10px; background:linear-gradient(90deg,#e53935,#ff5252);">Reject</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  body{
+    background: url("{{ url_for('static', filename='images/—Pngtree—bright and colorful flowers lilac_15451951.png') }}")
+   no-repeat center center / cover;
+  }
+</style>
+<body>
+<h1 class="page-title">🌸 BloomAlert - Live Nature Dashboard 🌸</h1>
+
+<div id="map" style="height:450px; width:90%; max-width:900px; margin:20px auto;"></div>
+
+<div class="glass-container" style="max-width:1000px;">
+  <h2 style="text-align:center;">🌿 Nature Overview 🌿</h2>
+
+  <div class="dashboard-content" style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px;">
+
+    <!-- WEATHER CARD -->
+    <div class="glass-container" style="flex:1 1 300px; text-align:center;">
+      <h3>🌤️ Weather</h3>
+      <p id="weather">Loading weather...</p>
+      <small id="weatherDetails" class="small-text"></small>
+      <small id="weatherSource" class="small-text"></small>
+    </div>
+
+    <!-- NDVI CARD -->
+    <div class="glass-container" style="flex:1 1 300px; text-align:center;">
+      <h3>🌱 NDVI Index</h3>
+      <canvas id="ndviChart" width="300" height="200"></canvas>
+    </div>
+
+    <!-- BLOOM CARD -->
+    <div class="glass-container" style="flex:1 1 300px; text-align:center;">
+      <h3>🌸 Bloom Summary</h3>
+      <p id="bloomSummary">Detecting bloom trends...</p>
+      <small id="bloomValue" class="small-text"></small>
+    </div>
+
+    <!-- AQI CARD -->
+    <div class="glass-container" style="flex:1 1 300px; text-align:center;">
+      <h3>🍃 Air Quality Index</h3>
+      <p id="aqiStatus">Fetching...</p>
+      <small id="aqiSource" class="small-text"></small>
+    </div>
+
+  </div>
+</div>
+
+<!-- FORECAST SECTION -->
+<div class="glass-container" style="max-width:900px; text-align:center; margin-top:30px;">
+  <h2>🌦️ 3-Day Weather Forecast</h2>
+  <div id="forecastCards" style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap;"></div>
+</div>
+</body>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+(async function(){
+  // --- Helpers ---
+  async function jsonFetch(url){
+    const res = await fetch(url, { credentials: 'same-origin' });
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error(txt || 'Server error');
+    }
+    return res.json();
+  }
+
+  // Get geolocation (fallback to Chennai)
+  let lat = 13.0827, lon = 80.2707;
+  try {
+    const pos = await new Promise((resolve, reject) => {
+      if (!navigator.geolocation) return reject(new Error('Geolocation not available'));
+      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 6000 });
+    });
+    lat = pos.coords.latitude;
+    lon = pos.coords.longitude;
+  } catch (err) {
+    console.warn('Geolocation failed/denied - using default location.', err);
+  }
+
+  // init map
+  const map = L.map('map').setView([lat, lon], 7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+  const marker = L.marker([lat, lon]).addTo(map).bindPopup('You / default location').openPopup();
+
+  // map click -> popup showing weather + AQI for clicked point
+  map.on('click', async (e) => {
+    const clat = e.latlng.lat.toFixed(4), clon = e.latlng.lng.toFixed(4);
+    try {
+      const wp = await jsonFetch(`/api/weather?lat=${clat}&lon=${clon}`);
+      const ap = await jsonFetch(`/api/air_quality?lat=${clat}&lon=${clon}`);
+      const w = wp.data || wp;
+      const a = ap.data || ap;
+      const content = `
+        <div style="text-align:left;">
+          <strong>Weather:</strong> ${w.name || ''} — ${w.main} ${w.temp ? '('+w.temp+'°C)' : ''}<br/>
+          <strong>Air Quality:</strong> ${a.status} (AQI ${a.aqi})
+        </div>`;
+      L.popup().setLatLng(e.latlng).setContent(content).openOn(map);
+    } catch (err) {
+      console.error('map click fetch error', err);
+      L.popup().setLatLng(e.latlng).setContent('Data unavailable for this point.').openOn(map);
+    }
+  });
+
+  // --- Weather ---
+  try {
+    const payload = await jsonFetch(`/api/weather?lat=${lat}&lon=${lon}`);
+    const src = payload.source ? ` (source: ${payload.source})` : '';
+    const w = payload.data || payload;
+    document.getElementById('weather').innerText = `${w.name}: ${w.main} — ${w.temp}°C, Humidity: ${w.humidity}%`;
+    document.getElementById('weatherDetails').innerText = `${w.description || ''} — Wind: ${w.wind_speed || '-'} m/s`;
+    document.getElementById('weatherSource').innerText = src;
+  } catch (err) {
+    console.error('Weather error', err);
+    document.getElementById('weather').innerText = 'Weather unavailable.';
+  }
+
+  // --- NDVI Chart ---
+  try {
+    const records = await jsonFetch('/api/ndvi_monthly');
+    const labels = (records || []).map(r => r.month);
+    const values = (records || []).map(r => parseFloat(r.ndvi));
+    const ctx = document.getElementById('ndviChart');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'NDVI',
+          data: values,
+          borderColor: '#ff8fab',
+          backgroundColor: 'rgba(255,192,203,0.25)',
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        plugins: { legend: { display: false }},
+        scales: {
+          y: { beginAtZero: true, max: 1, ticks: { color: '#fff' } },
+          x: { ticks: { color: '#fff' } }
+        }
+      }
+    });
+  } catch (err) {
+    console.error('NDVI error', err);
+    document.getElementById('ndviChart').parentNode.innerText = 'NDVI data unavailable.';
+  }
+
+  // --- Bloom summary ---
+  try {
+    const summary = await jsonFetch('/api/bloom_summary');
+    document.getElementById('bloomSummary').innerText = summary.status || summary;
+    if (summary.recent_mean !== undefined && summary.recent_mean !== null) {
+      document.getElementById('bloomValue').innerText = `Recent NDVI mean: ${summary.recent_mean}`;
+    }
+  } catch (err) {
+    console.error('Bloom summary error', err);
+    document.getElementById('bloomSummary').innerText = 'Bloom summary unavailable.';
+  }
+
+  // --- AQI ---
+  try {
+    const ap = await jsonFetch(`/api/air_quality?lat=${lat}&lon=${lon}`);
+    const a = ap.data || ap;
+    document.getElementById('aqiStatus').innerText = `${a.status} (AQI: ${a.aqi})`;
+    document.getElementById('aqiSource').innerText = ap.source ? `(${ap.source})` : '';
+  } catch (err) {
+    console.error('AQI error', err);
+    document.getElementById('aqiStatus').innerText = 'AQI unavailable.';
+  }
+
+  // --- 3-day forecast ---
+  try {
+    const fp = await jsonFetch(`/api/forecast?lat=${lat}&lon=${lon}`);
+    const forecast = fp.data || fp;
+    const container = document.getElementById('forecastCards');
+    if (!Array.isArray(forecast) || forecast.length === 0) {
+      container.innerHTML = '<p>Forecast unavailable.</p>';
+    } else {
+      container.innerHTML = forecast.map(f => `
+        <div class="glass-container" style="flex:1 1 180px; text-align:center;">
+          <h4>${f.date}</h4>
+          <img src="https://openweathermap.org/img/wn/${f.icon}@2x.png" width="60" alt="${f.desc}" />
+          <p style="text-transform: capitalize;">${f.desc}</p>
+          <strong>${f.temp}°C</strong>
+        </div>
+      `).join('');
+    }
+  } catch (err) {
+    console.error('Forecast error', err);
+    document.getElementById('forecastCards').innerHTML = '<p>Forecast unavailable.</p>';
+  }
+
+})();
+</script>
+
+{% endblock %}

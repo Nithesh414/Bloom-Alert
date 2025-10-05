@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>BloomAlert</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
+</head>
+<body>
+    {% if session.get('username') %}
+    <nav>
+        <ul class="navbar">
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('calendar_learn') }}">Calendar & Learn</a></li>
+            <li><a href="{{ url_for('report_detect') }}">Report & Detect</a></li>
+            <li><a href="{{ url_for('camera') }}">Camera</a></li>
+            <li><a href="{{ url_for('about_admin') }}">About & Admin</a></li>
+            <li><a href="{{ url_for('logout') }}">Logout ({{ session.get('username') }})</a></li>
+        </ul>
+    </nav>
+    {% endif %}
+
+    <!-- Flash message section -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul>
+                    {% for category, message in messages %}
+                        <li class="flash {{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

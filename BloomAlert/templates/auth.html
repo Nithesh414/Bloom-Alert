@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  /* === Cherry Blossom Login/Register Page === */
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: url("{{ url_for('static', filename='images/9f8d178f-149c-49d0-9f1a-819b7dc11800.jpg') }}")
+      no-repeat center center / cover;
+    position: relative;
+    overflow: hidden;
+    padding-right:20%;
+  }
+
+  /* Floating petals animation overlay */
+  .petals {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .petal {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: rgba(255, 192, 203, 0.8);
+    border-radius: 50%;
+    animation: fall 10s linear infinite;
+  }
+
+  @keyframes fall {
+    0% {
+      transform: translateY(-10vh) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(110vh) rotate(360deg);
+      opacity: 0;
+    }
+  }
+
+  /* === Glassmorphism container === */
+  .auth-container {
+    width: 400px;
+    padding: 40px 35px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(18px);
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-right: 20%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+    color: #fff;
+    text-align: center;
+  }
+
+  /* === Title === */
+  .auth-container h2 {
+    font-weight: 700;
+    margin-bottom: 25px;
+    background: linear-gradient(90deg, #100f0f, #141313);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-color: transparent; /* ✅ ensures no pink box */
+  }
+
+  /* === Tabs === */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+  }
+
+  .tabs button {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+  }
+
+  .tabs button.active {
+    background: linear-gradient(90deg, #ff8fab, #ffb3c6);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(255, 182, 193, 0.6);
+  }
+
+  /* === Input Fields === */
+  form {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+  }
+
+  label {
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  input[type="text"],
+  input[type="password"],
+  input[type="email"] {
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    margin-bottom: 18px;
+    font-size: 1rem;
+    outline: none;
+    color: #333;
+    transition: box-shadow 0.3s ease;
+  }
+
+  input:focus {
+    box-shadow: 0 0 12px rgba(255, 182, 193, 0.9);
+  }
+
+  /* === Buttons === */
+  .submit-btn {
+    background: linear-gradient(90deg, #ff4b8a, #6f51ff);
+    padding: 12px;
+    border-radius: 12px;
+    color: white;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 15px rgba(255, 182, 193, 0.5);
+  }
+
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 182, 193, 0.7);
+  }
+
+  /* === Footer text === */
+  .small-text {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.85);
+    text-align: center;
+    margin-top: 15px;
+  }
+</style>
+
+<!-- Floating petals animation -->
+<div class="petals">
+  {% for i in range(12) %}
+  <div
+    class="petal"
+  ></div>
+  {% endfor %}
+</div>
+
+<!-- Auth Container -->
+<div class="auth-container">
+  <h2 style="color: #333;">🌸 Cherry Blossom Login 🌸</h2>
+
+  <div class="tabs">
+    <button id="loginBtn" class="active">Login</button>
+    <button id="registerBtn">Register</button>
+  </div>
+
+  <!-- Login Form -->
+  <form id="loginForm" method="POST" action="/auth">
+    <input type="hidden" name="action" value="login" />
+    <label for="loginUsername">Username</label>
+    <input id="loginUsername" name="username" type="text" required />
+
+    <label for="loginPassword">Password</label>
+    <input id="loginPassword" name="password" type="password" required />
+
+    <button type="submit" class="submit-btn">Login</button>
+  </form>
+
+  <!-- Register Form -->
+  <form id="registerForm" method="POST" action="/auth" style="display:none;">
+    <input type="hidden" name="action" value="register" />
+    <label for="registerUsername">Username</label>
+    <input id="registerUsername" name="username" type="text" required />
+
+    <label for="registerPassword">Password</label>
+    <input id="registerPassword" name="password" type="password" required />
+
+    <button type="submit" class="submit-btn">Register</button>
+  </form>
+
+  <p class="small-text">Bloom into your account ✿</p>
+</div>
+
+<script>
+  const loginBtn = document.getElementById("loginBtn");
+  const registerBtn = document.getElementById("registerBtn");
+  const loginForm = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registerForm");
+
+  loginBtn.addEventListener("click", () => {
+    loginForm.style.display = "flex";
+    registerForm.style.display = "none";
+    loginBtn.classList.add("active");
+    registerBtn.classList.remove("active");
+  });
+
+  registerBtn.addEventListener("click", () => {
+    registerForm.style.display = "flex";
+    loginForm.style.display = "none";
+    registerBtn.classList.add("active");
+    loginBtn.classList.remove("active");
+  });
+</script>
+{% endblock %}
