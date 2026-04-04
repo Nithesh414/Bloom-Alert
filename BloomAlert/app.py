@@ -19,6 +19,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # OpenWeather API key (env override recommended)
+app.config['OPENWEATHER_API_KEY'] = os.getenv('OPENWEATHER_API_KEY', '8521546e5718899860daefbce97bea4e')
 
 # Uploads should be placed under static/uploads so they are served
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
