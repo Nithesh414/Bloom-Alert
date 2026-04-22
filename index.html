@@ -652,6 +652,7 @@
       renderOrders(id);
     }
 
+    
     document.getElementById('adminForm').addEventListener('submit', function(e){
       e.preventDefault();
       const name = document.getElementById('adminName').value.trim();
@@ -659,6 +660,80 @@
       const price = Number(document.getElementById('adminPrice').value);
       const stock = Number(document.getElementById('adminStock').value);
       const image = document.getElementById('adminImage').value.trim() || defaultImage;
-      </script>
+      if(!name || price < 0 || stock < 0){ alert('Please enter valid product details.'); return; }
+      if(editingId){
+        products = products.map(p=>p.id===editingId ? {...p,name,category,price,stock,image} : p);
+        alert('Product updated successfully');
+      } else {
+        products.unshift({id:Date.now(),name,category,price,stock,image});
+        alert('Product added successfully');
+      }
+      saveAll();
+      renderProducts();
+      renderAdmin();
+      resetAdminForm();
+    });
+
+    function renderAdmin(){
+      const box = document.getElementById('adminList');
+      box.innerHTML = products.map(p=>`
+        <div class="admin-item">
+          <img class="thumb" src="${p.image || defaultImage}" alt="${p.name}">
+          <div>
+            <div style="font-weight:700">${p.name}</div>
+            <div class="muted">${p.category}</div>
+            <div class="muted">₹${p.price} • Stock: ${p.stock}</div>
+          </div>
+          <div class="order-actions">
+            <button class="small-btn" onclick="editAdminProduct(${p.id})">Edit</button>
+            <button class="small-btn danger" onclick="deleteAdminProduct(${p.id})">Delete</button>
+          </div>
+        </div>`).join('');
+    }
+
+    function editAdminProduct(id){
+      const p = products.find(item=>item.id===id);
+      if(!p) return;
+      editingId = id;
+      document.getElementById('adminName').value = p.name;
+      document.getElementById('adminCategory').value = p.category;
+      document.getElementById('adminPrice').value = p.price;
+      document.getElementById('adminStock').value = p.stock;
+      document.getElementById('adminImage').value = p.image;
+      document.getElementById('adminFormTitle').textContent = 'Update Product';
+      document.getElementById('adminSubmit').textContent = 'Update Product';
+      showSection('adminSection');
+    }
+
+    function deleteAdminProduct(id){
+      if(!confirm('Delete this product?')) return;
+      products = products.filter(p=>p.id!==id);
+      cart = cart.filter(c=>c.id!==id);
+      saveAll();
+      renderProducts();
+      renderCart();
+      renderAdmin();
+    }
+
+    function resetAdminForm(){
+      editingId = null;
+      document.getElementById('adminForm').reset();
+      document.getElementById('adminFormTitle').textContent = 'Add Product';
+      document.getElementById('adminSubmit').textContent = 'Add Product';
+    }
+    document.getElementById('searchInput').addEventListener('input', renderProducts);
+
+updateCartCount();
+
+renderProducts();
+
+renderCart();
+
+renderOrders();
+
+renderAdmin();
+
+</script>
+
 </body>
 </html>
