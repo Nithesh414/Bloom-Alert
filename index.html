@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -78,7 +79,9 @@
         <button class="nav-btn" onclick="showSection('cartSection')">Cart (<span id="cartCount">0</span>)</button>
       </div>
     </div>
-  </header>  <main class="container">
+  </header>
+
+  <main class="container">
     <section id="shopSection">
       <div class="hero">
         <div class="hero-box">
@@ -92,109 +95,114 @@
           </div>
           <div class="hero-img"></div>
         </div>
-      </div><div class="section" id="productsArea">
-    <div class="section-head">
-      <h2>Featured Products</h2>
-      <div class="filters">
-        <select id="categoryFilter" onchange="renderProducts()">
-          <option value="All">All Categories</option>
-          <option value="Clips">Clips</option>
-          <option value="Bands">Bands</option>
-          <option value="Claw Clips">Claw Clips</option>
-          <option value="Scrunchies">Scrunchies</option>
-          <option value="Earrings">Earrings</option>
-        </select>
       </div>
-    </div>
-    <div id="productGrid" class="grid"></div>
-  </div>
-</section>
 
-<section id="cartSection" class="hidden section">
-  <div class="layout">
-    <div class="panel">
-      <h3>Your Cart</h3>
-      <div id="cartList"></div>
-    </div>
-    <div class="panel">
-      <h3>Checkout</h3>
-      <div class="notice">Payment gateway in this demo is simulated. For a real client site, replace it with Razorpay or another real payment service.</div>
-      <form id="checkoutForm">
-        <div class="two-col">
-          <input class="input" id="customerName" placeholder="Full name" required />
-          <input class="input" id="customerPhone" placeholder="Phone number" required />
+      <div class="section" id="productsArea">
+        <div class="section-head">
+          <h2>Featured Products</h2>
+          <div class="filters">
+            <select id="categoryFilter" onchange="renderProducts()">
+              <option value="All">All Categories</option>
+              <option value="Clips">Clips</option>
+              <option value="Bands">Bands</option>
+              <option value="Claw Clips">Claw Clips</option>
+              <option value="Scrunchies">Scrunchies</option>
+              <option value="Earrings">Earrings</option>
+            </select>
+          </div>
         </div>
-        <div style="height:12px"></div>
-        <textarea id="customerAddress" rows="4" placeholder="Delivery address" required></textarea>
-        <div style="height:12px"></div>
-        <select id="paymentMethod">
-          <option value="COD">Cash on Delivery</option>
-          <option value="UPI">UPI</option>
-          <option value="Card">Card</option>
-        </select>
-        <div style="height:16px"></div>
-        <div class="summary-line"><span>Items</span><span id="itemsTotal">₹0</span></div>
-        <div class="summary-line"><span>Delivery</span><span>₹40</span></div>
-        <div class="summary-total"><span>Total</span><span id="grandTotal">₹40</span></div>
-        <button class="primary" style="width:100%">Place Order</button>
-      </form>
-    </div>
-  </div>
-</section>
+        <div id="productGrid" class="grid"></div>
+      </div>
+    </section>
 
-<section id="ordersSection" class="hidden section">
-  <div class="panel">
-    <div class="section-head">
-      <h2>My Orders</h2>
-      <input id="trackInput" class="input" style="max-width:260px" placeholder="Enter order ID to track" />
-    </div>
-    <div class="order-actions" style="margin-bottom:16px">
-      <button class="small-btn" onclick="trackOrder()">Track Order</button>
-      <button class="small-btn" onclick="renderOrders()">Show All Orders</button>
-    </div>
-    <div id="ordersList"></div>
-  </div>
-</section>
+    <section id="cartSection" class="hidden section">
+      <div class="layout">
+        <div class="panel">
+          <h3>Your Cart</h3>
+          <div id="cartList"></div>
+        </div>
+        <div class="panel">
+          <h3>Checkout</h3>
+          <div class="notice">Payment gateway in this demo is simulated. For a real client site, replace it with Razorpay or another real payment service.</div>
+          <form id="checkoutForm">
+            <div class="two-col">
+              <input class="input" id="customerName" placeholder="Full name" required />
+              <input class="input" id="customerPhone" placeholder="Phone number" required />
+            </div>
+            <div style="height:12px"></div>
+            <textarea id="customerAddress" rows="4" placeholder="Delivery address" required></textarea>
+            <div style="height:12px"></div>
+            <select id="paymentMethod">
+              <option value="COD">Cash on Delivery</option>
+              <option value="UPI">UPI</option>
+              <option value="Card">Card</option>
+            </select>
+            <div style="height:16px"></div>
+            <div class="summary-line"><span>Items</span><span id="itemsTotal">₹0</span></div>
+            <div class="summary-line"><span>Delivery</span><span>₹40</span></div>
+            <div class="summary-total"><span>Total</span><span id="grandTotal">₹40</span></div>
+            <button class="primary" style="width:100%">Place Order</button>
+          </form>
+        </div>
+      </div>
+    </section>
 
-<section id="adminSection" class="hidden section">
-  <div class="layout">
-    <div class="panel">
-      <h3 id="adminFormTitle">Add Product</h3>
-      <form id="adminForm">
-        <div class="two-col">
-          <input class="input" id="adminName" placeholder="Product name" required />
-          <select id="adminCategory">
-            <option value="Clips">Clips</option>
-            <option value="Bands">Bands</option>
-            <option value="Claw Clips">Claw Clips</option>
-            <option value="Scrunchies">Scrunchies</option>
-            <option value="Earrings">Earrings</option>
-          </select>
+    <section id="ordersSection" class="hidden section">
+      <div class="panel">
+        <div class="section-head">
+          <h2>My Orders</h2>
+          <input id="trackInput" class="input" style="max-width:260px" placeholder="Enter order ID to track" />
         </div>
-        <div style="height:12px"></div>
-        <div class="two-col">
-          <input class="input" id="adminPrice" type="number" placeholder="Price" required />
-          <input class="input" id="adminStock" type="number" placeholder="Stock" required />
+        <div class="order-actions" style="margin-bottom:16px">
+          <button class="small-btn" onclick="trackOrder()">Track Order</button>
+          <button class="small-btn" onclick="renderOrders()">Show All Orders</button>
         </div>
-        <div style="height:12px"></div>
-        <input class="input" id="adminImage" placeholder="Image URL" />
-        <div style="height:16px"></div>
-        <div class="order-actions">
-          <button class="primary" type="submit" id="adminSubmit">Add Product</button>
-          <button class="secondary" type="button" onclick="resetAdminForm()">Clear</button>
-        </div>
-      </form>
-    </div>
-    <div class="panel">
-      <h3>Manage Products</h3>
-      <div id="adminList"></div>
-    </div>
-  </div>
-</section>
+        <div id="ordersList"></div>
+      </div>
+    </section>
 
-  </main>  <footer>
+    <section id="adminSection" class="hidden section">
+      <div class="layout">
+        <div class="panel">
+          <h3 id="adminFormTitle">Add Product</h3>
+          <form id="adminForm">
+            <div class="two-col">
+              <input class="input" id="adminName" placeholder="Product name" required />
+              <select id="adminCategory">
+                <option value="Clips">Clips</option>
+                <option value="Bands">Bands</option>
+                <option value="Claw Clips">Claw Clips</option>
+                <option value="Scrunchies">Scrunchies</option>
+                <option value="Earrings">Earrings</option>
+              </select>
+            </div>
+            <div style="height:12px"></div>
+            <div class="two-col">
+              <input class="input" id="adminPrice" type="number" placeholder="Price" required />
+              <input class="input" id="adminStock" type="number" placeholder="Stock" required />
+            </div>
+            <div style="height:12px"></div>
+            <input class="input" id="adminImage" placeholder="Image URL" />
+            <div style="height:16px"></div>
+            <div class="order-actions">
+              <button class="primary" type="submit" id="adminSubmit">Add Product</button>
+              <button class="secondary" type="button" onclick="resetAdminForm()">Clear</button>
+            </div>
+          </form>
+        </div>
+        <div class="panel">
+          <h3>Manage Products</h3>
+          <div id="adminList"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
     Ribbon & Rose demo ecommerce site • customer flow + order tracking + admin panel
-  </footer>  <script>
+  </footer>
+
+  <script>
     const defaultImage = 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80';
     let editingId = null;
     let products = JSON.parse(localStorage.getItem('rr_products')) || [
@@ -401,5 +409,75 @@
       const price = Number(document.getElementById('adminPrice').value);
       const stock = Number(document.getElementById('adminStock').value);
       const image = document.getElementById('adminImage').value.trim() || defaultImage;
-      </script>
+      if(!name || price < 0 || stock < 0){ alert('Please enter valid product details.'); return; }
+      if(editingId){
+        products = products.map(p=>p.id===editingId ? {...p,name,category,price,stock,image} : p);
+        alert('Product updated successfully');
+      } else {
+        products.unshift({id:Date.now(),name,category,price,stock,image});
+        alert('Product added successfully');
+      }
+      saveAll();
+      renderProducts();
+      renderAdmin();
+      resetAdminForm();
+    });
+
+    function renderAdmin(){
+      const box = document.getElementById('adminList');
+      box.innerHTML = products.map(p=>`
+        <div class="admin-item">
+          <img class="thumb" src="${p.image || defaultImage}" alt="${p.name}">
+          <div>
+            <div style="font-weight:700">${p.name}</div>
+            <div class="muted">${p.category}</div>
+            <div class="muted">₹${p.price} • Stock: ${p.stock}</div>
+          </div>
+          <div class="order-actions">
+            <button class="small-btn" onclick="editAdminProduct(${p.id})">Edit</button>
+            <button class="small-btn danger" onclick="deleteAdminProduct(${p.id})">Delete</button>
+          </div>
+        </div>`).join('');
+    }
+
+    function editAdminProduct(id){
+      const p = products.find(item=>item.id===id);
+      if(!p) return;
+      editingId = id;
+      document.getElementById('adminName').value = p.name;
+      document.getElementById('adminCategory').value = p.category;
+      document.getElementById('adminPrice').value = p.price;
+      document.getElementById('adminStock').value = p.stock;
+      document.getElementById('adminImage').value = p.image;
+      document.getElementById('adminFormTitle').textContent = 'Update Product';
+      document.getElementById('adminSubmit').textContent = 'Update Product';
+      showSection('adminSection');
+    }
+
+    function deleteAdminProduct(id){
+      if(!confirm('Delete this product?')) return;
+      products = products.filter(p=>p.id!==id);
+      cart = cart.filter(c=>c.id!==id);
+      saveAll();
+      renderProducts();
+      renderCart();
+      renderAdmin();
+    }
+
+    function resetAdminForm(){
+      editingId = null;
+      document.getElementById('adminForm').reset();
+      document.getElementById('adminFormTitle').textContent = 'Add Product';
+      document.getElementById('adminSubmit').textContent = 'Add Product';
+    }
+
+    document.getElementById('searchInput').addEventListener('input', renderProducts);
+
+    updateCartCount();
+    renderProducts();
+    renderCart();
+    renderOrders();
+    renderAdmin();
+  </script>
+</body>
 </html>
