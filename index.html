@@ -194,6 +194,263 @@
 
   </main>  <footer>
     Ribbon & Rose demo ecommerce site • customer flow + order tracking + admin panel
+  </footer>  <script>
+    const defaultImage = 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80';
+    let editingId = null;
+    let products = JSON.parse(localStorage.getItem('rr_products')) || [
+      {id:1,name:'Butterfly Hair Clip',category:'Clips',price:120,stock:14,image:'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80'},
+      {id:2,name:'Velvet Hair Band',category:'Bands',price:180,stock:10,image:'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80'},
+      {id:3,name:'Pearl Claw Clip',category:'Claw Clips',price:220,stock:8,image:'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80'},
+      {id:4,name:'Pastel Scrunchie Set',category:'Scrunchies',price:160,stock:20,image:'https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=800&q=80'},
+      {id:5,name:'Floral Stud Earrings',category:'Earrings',price:140,stock:12,image:'https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=800&q=80'}
+    ];
+    let cart = JSON.parse(localStorage.getItem('rr_cart')) || [];
+    let orders = JSON.parse(localStorage.getItem('rr_orders')) || [];
+
+    function saveAll(){
+      localStorage.setItem('rr_products', JSON.stringify(products));
+      localStorage.setItem('rr_cart', JSON.stringify(cart));
+      localStorage.setItem('rr_orders', JSON.stringify(orders));
+    }
+
+    function showSection(id){
+      ['shopSection','cartSection','ordersSection','adminSection'].forEach(sec=>document.getElementById(sec).classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+      if(id==='cartSection') renderCart();
+      if(id==='ordersSection') renderOrders();
+      if(id==='adminSection') renderAdmin();
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    function scrollToProducts(){
+      document.getElementById('productsArea').scrollIntoView({behavior:'smooth'});
+    }
+
+    function filteredProducts(){
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const cat = document.getElementById('categoryFilter').value;
+      return products.filter(p => (cat==='All' || p.category===cat) && (p.name.toLowerCase().includes(search) || p.category.toLowerCase().includes(search)));
+    }
+
+    function renderProducts(){
+      const grid = document.getElementById('productGrid');
+      const list = filteredProducts();
+      grid.innerHTML = list.length ? list.map(p=>`
+        <div class="card">
+          <img src="${p.image || defaultImage}" alt="${p.name}">
+          <div class="card-body">
+            <div class="badge">${p.category}</div>
+            <div class="title">${p.name}</div>
+            <div class="muted">Cute and stylish everyday accessory.</div>
+            <div class="price-row">
+              <div class="price">₹${p.price}</div>
+              <div class="stock">Stock: ${p.stock}</div>
+            </div>
+            <div class="card-actions">
+              <button class="add" onclick="addToCart(${p.id})">Add to Cart</button>
+              <button class="view" onclick="quickBuy(${p.id})">Buy Now</button>
+            </div>
+          </div>
+        </div>`).join('') : '<div class="notice">No matching products found.</div>';
+    }
+
+    function updateCartCount(){
+      const count = cart.reduce((sum,i)=>sum+i.qty,0);
+      document.getElementById('cartCount').textContent = count;
+    }
+
+    function addToCart(id){
+      const product = products.find(p=>p.id===id);
+      if(!product || product.stock<=0){ alert('Product is out of stock.'); return; }
+      const found = cart.find(i=>i.id===id);
+      if(found){ if(found.qty < product.stock) found.qty += 1; }
+      else cart.push({...product, qty:1});
+      saveAll();
+      updateCartCount();
+      alert('Added to cart');
+    }
+
+    function quickBuy(id){
+      addToCart(id);
+      showSection('cartSection');
+    }
+
+    function renderCart(){
+      const box = document.getElementById('cartList');
+      if(cart.length===0){
+        box.innerHTML = '<div class="notice">Your cart is empty.</div>';
+        document.getElementById('itemsTotal').textContent = '₹0';
+        document.getElementById('grandTotal').textContent = '₹40';
+        return;
+      }
+      box.innerHTML = cart.map(item=>`
+        <div class="cart-item">
+          <img class="thumb" src="${item.image || defaultImage}" alt="${item.name}">
+          <div>
+            <div class="title" style="font-size:17px">${item.name}</div>
+            <div class="muted">${item.category} • ₹${item.price}</div>
+            <div class="qty-row">
+              <button class="qty-btn" onclick="changeQty(${item.id},-1)">-</button>
+              <span>Qty: ${item.qty}</span>
+              <button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
+              <button class="small-btn danger" onclick="removeFromCart(${item.id})">Remove</button>
+            </div>
+          </div>
+          <div class="price">₹${item.price * item.qty}</div>
+        </div>`).join('');
+      const subtotal = cart.reduce((s,i)=>s+i.price*i.qty,0);
+      document.getElementById('itemsTotal').textContent = `₹${subtotal}`;
+      document.getElementById('grandTotal').textContent = `₹${subtotal + 40}`;
+    }
+
+    function changeQty(id,delta){
+      const item = cart.find(i=>i.id===id);
+      const product = products.find(p=>p.id===id);
+      if(!item || !product) return;
+      item.qty += delta;
+      if(item.qty > product.stock) item.qty = product.stock;
+      if(item.qty <= 0) cart = cart.filter(i=>i.id!==id);
+      saveAll();
+      updateCartCount();
+      renderCart();
+    }
+
+    function removeFromCart(id){
+      cart = cart.filter(i=>i.id!==id);
+      saveAll();
+      updateCartCount();
+      renderCart();
+    }
+
+    document.getElementById('checkoutForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      if(cart.length===0){ alert('Your cart is empty.'); return; }
+      const name = document.getElementById('customerName').value.trim();
+      const phone = document.getElementById('customerPhone').value.trim();
+      const address = document.getElementById('customerAddress').value.trim();
+      const payment = document.getElementById('paymentMethod').value;
+      const subtotal = cart.reduce((s,i)=>s+i.price*i.qty,0);
+      const orderId = 'RR' + Date.now().toString().slice(-8);
+      const order = {
+        id: orderId,
+        items: JSON.parse(JSON.stringify(cart)),
+        customerName: name,
+        phone,
+        address,
+        payment,
+        amount: subtotal + 40,
+        status: payment === 'COD' ? 'Order Confirmed' : 'Payment Successful',
+        createdAt: new Date().toLocaleString(),
+        timeline: ['Order Placed','Packed','Shipped']
+      };
+      orders.unshift(order);
+      cart.forEach(ci=>{
+        const p = products.find(pp=>pp.id===ci.id);
+        if(p) p.stock = Math.max(0, p.stock - ci.qty);
+      });
+      cart = [];
+      saveAll();
+      updateCartCount();
+      renderProducts();
+      renderCart();
+      this.reset();
+      showSection('ordersSection');
+      renderOrders(orderId);
+      alert('Order placed successfully. Your order ID is ' + orderId);
+    });
+
+    function renderOrders(trackId=''){
+      const box = document.getElementById('ordersList');
+      let list = orders;
+      if(trackId) list = orders.filter(o=>o.id.toLowerCase()===trackId.toLowerCase());
+      if(list.length===0){ box.innerHTML = '<div class="notice">No orders found.</div>'; return; }
+      box.innerHTML = list.map(order=>`
+        <div class="panel" style="margin-bottom:16px;padding:16px">
+          <div class="section-head" style="margin-bottom:10px">
+            <div>
+              <div class="title">Order ID: ${order.id}</div>
+              <div class="muted">${order.createdAt}</div>
+              <div class="status">${order.status}</div>
+            </div>
+            <div class="price">₹${order.amount}</div>
+          </div>
+          ${order.items.map(i=>`
+            <div class="order-item">
+              <img class="thumb" src="${i.image || defaultImage}" alt="${i.name}">
+              <div>
+                <div style="font-weight:700">${i.name}</div>
+                <div class="muted">${i.category} • Qty: ${i.qty} • ₹${i.price}</div>
+              </div>
+              <div>₹${i.price * i.qty}</div>
+            </div>`).join('')}
+          <div style="margin-top:12px" class="muted"><strong>Delivery to:</strong> ${order.customerName}, ${order.phone}, ${order.address}</div>
+          <div style="margin-top:8px" class="muted"><strong>Payment:</strong> ${order.payment}</div>
+          <div style="margin-top:8px" class="muted"><strong>Tracking:</strong> ${order.timeline.join(' → ')}</div>
+        </div>`).join('');
+    }
+
+    function trackOrder(){
+      const id = document.getElementById('trackInput').value.trim();
+      renderOrders(id);
+    }
+
+    document.getElementById('adminForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const name = document.getElementById('adminName').value.trim();
+      const category = document.getElementById('adminCategory').value;
+      const price = Number(document.getElementById('adminPrice').value);
+      const stock = Number(document.getElementById('adminStock').value);
+      const image = document.getElementById('adminImage').value.trim() || defaultImage;
+     <div class="section-head">
+      <h2>My Orders</h2>
+      <input id="trackInput" class="input" style="max-width:260px" placeholder="Enter order ID to track" />
+    </div>
+    <div class="order-actions" style="margin-bottom:16px">
+      <button class="small-btn" onclick="trackOrder()">Track Order</button>
+      <button class="small-btn" onclick="renderOrders()">Show All Orders</button>
+    </div>
+    <div id="ordersList"></div>
+  </div>
+</section>
+
+<section id="adminSection" class="hidden section">
+  <div class="layout">
+    <div class="panel">
+      <h3 id="adminFormTitle">Add Product</h3>
+      <form id="adminForm">
+        <div class="two-col">
+          <input class="input" id="adminName" placeholder="Product name" required />
+          <select id="adminCategory">
+            <option value="Clips">Clips</option>
+            <option value="Bands">Bands</option>
+            <option value="Claw Clips">Claw Clips</option>
+            <option value="Scrunchies">Scrunchies</option>
+            <option value="Earrings">Earrings</option>
+          </select>
+        </div>
+        <div style="height:12px"></div>
+        <div class="two-col">
+          <input class="input" id="adminPrice" type="number" placeholder="Price" required />
+          <input class="input" id="adminStock" type="number" placeholder="Stock" required />
+        </div>
+        <div style="height:12px"></div>
+        <input class="input" id="adminImage" placeholder="Image URL" />
+        <div style="height:16px"></div>
+        <div class="order-actions">
+          <button class="primary" type="submit" id="adminSubmit">Add Product</button>
+          <button class="secondary" type="button" onclick="resetAdminForm()">Clear</button>
+        </div>
+      </form>
+    </div>
+    <div class="panel">
+      <h3>Manage Products</h3>
+      <div id="adminList"></div>
+    </div>
+  </div>
+</section>
+
+  </main>  <footer>
+    Ribbon & Rose demo ecommerce site • customer flow + order tracking + admin panel
   </footer>  
 <script>
     const defaultImage = 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80';
